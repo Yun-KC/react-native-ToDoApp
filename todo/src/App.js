@@ -3,8 +3,6 @@ import styled, {ThemeProvider} from 'styled-components/native';
 import {theme as themes} from './theme';
 import {StatusBar, Dimensions} from 'react-native';
 import Input from './components/input';
-import {images} from './images';
-import IconButton from './components/IconButton';
 import Task from './components/Task';
 
 const Container = styled.View`
@@ -28,9 +26,32 @@ const List = styled.ScrollView`
 
 export default () => {
   const width = Dimensions.get('window').width;
+
   const [newTask, setNewTask] = useState('');
+  const [tasks, setTasks] = useState({});
+
   const _addTask = () => {
+    const ID = Date.now().toString();
+    const newTaskObject = {
+      [ID]: {id: ID, text: newTask, completed: false},
+    };
+    setTasks({...tasks, ...newTaskObject});
     setNewTask('');
+  };
+  const _deleteTask = id => {
+    const currentTasks = Object.assign({}, tasks);
+    delete currentTasks[id];
+    setTasks(currentTasks);
+  };
+  const _toggleTask = id => {
+    const currentTasks = Object.assign({}, tasks);
+    currentTasks[id].completed = !currentTasks[id].completed;
+    setTasks(currentTasks);
+  };
+  const _updateTask = item => {
+    const currentTasks = Object.assign({}, tasks);
+    currentTasks[item.id] = item;
+    setTasks(currentTasks);
   };
   const _handleTextChange = text => {
     setNewTask(text);
@@ -51,17 +72,17 @@ export default () => {
           onSubmitEditing={_addTask}
         />
         <List width={width}>
-          <Task text="우헤" />
-          <Task text="우헤" />
-          <Task text="우헤" />
-          <Task text="우헤" />
-          <Task text="우헤" />
-          <Task text="우헤" />
-          <Task text="우헤" />
-          <Task text="우헤" />
-          <Task text="우헤" />
-          <Task text="우헤" />
-          <Task text="우헤" />
+          {Object.values(tasks)
+            .reverse()
+            .map(item => (
+              <Task
+                item={item}
+                key={item.id}
+                deleteTask={_deleteTask}
+                toggleTask={_toggleTask}
+                updateTask={_updateTask}
+              />
+            ))}
         </List>
       </Container>
     </ThemeProvider>
